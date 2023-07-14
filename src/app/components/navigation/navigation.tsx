@@ -5,7 +5,7 @@ export default function Navigation() {
   const router = useRouter();
 
   return (
-    <div className="flex justify-end w-full">
+    <div className="flex justify-end w-full fixed">
       <Link href="/" className={`pr-3 ${router.pathname == "/" && "active"}`}>
         {" "}
         Home{" "}

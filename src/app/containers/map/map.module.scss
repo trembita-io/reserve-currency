@@ -1,0 +1,15 @@
+.text {
+    color: var(--color-info);
+
+    &-sm {
+        font-size: 4px;
+    }
+
+    &-md {
+        font-size: 6px;
+    }
+
+    &-lg {
+        font-size: 6px;
+    }
+}

@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* https://colorhunt.co/palette/0719520b666a35a29f97feed */
+  --color-primary: #071952;
+  --color-secondary: #0B666A;
+  --color-info: #35A29F;
+  --color-netural: #97FEED;
+}
+
 html,
 body {
   padding: 0;
