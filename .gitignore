@@ -16,6 +16,7 @@
 /build
 
 # misc
+.swc
 .DS_Store
 *.pem
 
