@@ -22,18 +22,18 @@ export const getBigCountries = (geographies: Array<SvgGeography>) =>
     if (geometry.type === "Polygon") {
       return calcPolygonArea(geometry.coordinates[0]) > BIG_COUNTRY_THRESHOLD;
     } else {
-      console.log(
-        geo,
-        geometry.coordinates,
-        // geometry.coordinates
-        //   .map((multiPol) =>
-        //     (multiPol as any as Array<Array<[number, number]>>).map(
-        //       (cor: Array<[number, number]>) => calcPolygonArea(cor)
-        //     )
-        //   )
-        //   .flat(1)
-        //   .reduce((acc, curr) => acc + curr, 0)
-      );
+      // console.log(
+      //   geo,
+      //   geometry.coordinates,
+      //   // geometry.coordinates
+      //   //   .map((multiPol) =>
+      //   //     (multiPol as any as Array<Array<[number, number]>>).map(
+      //   //       (cor: Array<[number, number]>) => calcPolygonArea(cor)
+      //   //     )
+      //   //   )
+      //   //   .flat(1)
+      //   //   .reduce((acc, curr) => acc + curr, 0)
+      // );
       return (
         geometry.coordinates
           .map((multiPol) =>
@@ -77,17 +77,17 @@ export const getMainlandPolygon = (name: string, arr: Array<Array<Array<[xNumber
     longestTerritory = arr[0][0]; // mainland
 
     arr.forEach((territory) => {
-      if(name === 'United States of America') {
-        // console.log(territory, longest, longestTerritory);
-      }
+      // if(name === 'United States of America') {
+      //   console.log('\n\n\n+===>>>BIGGEST', territory, longest, longestTerritory);
+      // }
 
-      if(territory[0][0].length > longest) {
-        longest = territory[0][0].length;
+      if(territory[0].length > longest) {
+        longest = territory[0].length;
         longestTerritory = territory[0] as any;
       }
     });
 
-    console.log(name, longestTerritory, arr);  
+    // console.log(name, longestTerritory, arr);  
   
   return longestTerritory as any; // 
 }

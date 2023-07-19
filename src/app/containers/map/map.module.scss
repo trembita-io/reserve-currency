@@ -13,3 +13,7 @@
         font-size: 6px;
     }
 }
+
+.country-code {
+    @extend .text-sm;
+}
