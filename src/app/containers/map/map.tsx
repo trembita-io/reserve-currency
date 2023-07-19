@@ -8,7 +8,7 @@ import {
 import "./map.module.scss";
 import styles from "./map.module.scss";
 import { BaseGeography, SvgGeography } from "./model";
-import { getBigCountries, getMainlandPolygon, getPolygonCenter } from "./pure";
+import { filterOutNonStates, getBigCountries, getMainlandPolygon, getPolygonCenter } from "./pure";
 
 const geoUrl =
   "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json";
@@ -28,21 +28,15 @@ export default function MapChart() {
       <ZoomableGroup>
         <Geographies
           geography={geoUrl}
-          parseGeographies={(geos) => {
-            const filteredGeos = geos.filter(
-              (g) => g.id !== "RUS" && g.id !== "ATA"
-            ) as Array<BaseGeography>;
-
-            return filteredGeos;
-          }}
+          parseGeographies={geos => filterOutNonStates(geos as Array<BaseGeography>)}
         >
           {(geogs: { geographies: Array<SvgGeography> }) => {
             const { geographies } = geogs;
 
-            console.log(geographies);
+            // console.log('ALL COUNTRIES', geographies);
 
             const bigCountries = getBigCountries(geographies);
-            console.log(bigCountries);
+            console.log('BIG COUNTRIES', bigCountries);
 
             return geographies
               .map((geo: SvgGeography) => {
@@ -64,6 +58,7 @@ export default function MapChart() {
                     id,
                     geometry,
                     properties: { name, ["Alpha-2"]: code },
+                    polygonArea
                   }) => (
                     <Marker
                       key={`marker-${id}`}
@@ -85,7 +80,7 @@ export default function MapChart() {
                         {" "}
                         {code}
                       </text>
-                      <foreignObject x="-15" y="-18" width="30" height="36">
+                      <foreignObject x="-20" y="-15" width="40" height="30">
                         <div className="group relative flex justify-center h-full">
                           <span
                             className={`absolute top-10 scale-0 transition-all rounded bg-gray-800 p-0.5 ${styles["text-md"]} text-white group-hover:scale-100 top-0`}

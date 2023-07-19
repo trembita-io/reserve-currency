@@ -1,6 +1,12 @@
-import { BIG_COUNTRY_THRESHOLD, SvgGeography } from "./model";
+import {
+  BIG_COUNTRY_THRESHOLD,
+  BaseGeography,
+  TrembitaSvgGeography,
+  SvgGeography,
+} from "./model";
 
-function calcPolygonArea(vertices: Array<[number, number]>) {
+// @internal export for testing only
+export function _calcPolygonArea(vertices: Array<[number, number]>) {
   var total = 0;
 
   for (var i = 0, l = vertices.length; i < l; i++) {
@@ -16,47 +22,17 @@ function calcPolygonArea(vertices: Array<[number, number]>) {
   return Math.abs(total);
 }
 
-export const getBigCountries = (geographies: Array<SvgGeography>) =>
-  geographies.filter((geo) => {
-    const { geometry } = geo;
-    if (geometry.type === "Polygon") {
-      return calcPolygonArea(geometry.coordinates[0]) > BIG_COUNTRY_THRESHOLD;
-    } else {
-      // console.log(
-      //   geo,
-      //   geometry.coordinates,
-      //   // geometry.coordinates
-      //   //   .map((multiPol) =>
-      //   //     (multiPol as any as Array<Array<[number, number]>>).map(
-      //   //       (cor: Array<[number, number]>) => calcPolygonArea(cor)
-      //   //     )
-      //   //   )
-      //   //   .flat(1)
-      //   //   .reduce((acc, curr) => acc + curr, 0)
-      // );
-      return (
-        geometry.coordinates
-          .map((multiPol) =>
-            (multiPol as any as Array<Array<[number, number]>>).map(
-              (cor: Array<[number, number]>) => calcPolygonArea(cor)
-            )
-          )
-          .flat(1)
-          .reduce((acc, curr) => acc + curr, 0) > BIG_COUNTRY_THRESHOLD
-      );
-    }
-  });
-
-type xNumber = number;
-type yNumber = number;
-
-export const getPolygonCenter = (coordinates: Array<[xNumber, yNumber]>): [xNumber, yNumber] => {
+// @internal export for testing only
+export function _getMinMax(
+  coordinates: Array<[xNumber, yNumber]>
+): TrembitaSvgGeography["polygonCoordinates"] {
+  // export function _getMinMax(coordinates: Array<[xNumber, yNumber]>):Pick<TrembitaSvgGeography, "polygonCoordinates"> {
   let minX = coordinates[0][0],
     maxX = coordinates[0][0],
     minY = coordinates[0][1],
     maxY = coordinates[0][1];
 
-  coordinates.forEach(([x,y]) => {
+  coordinates.forEach(([x, y]) => {
     minX = Math.min(minX, x);
     maxX = Math.max(maxX, x);
 
@@ -64,30 +40,90 @@ export const getPolygonCenter = (coordinates: Array<[xNumber, yNumber]>): [xNumb
     maxY = Math.max(maxY, y);
   });
 
+  return {
+    minX,
+    maxX,
+    minY,
+    maxY,
+  };
+}
 
-  return [((maxX - minX) / 2) + minX, ((maxY - minY) / 2) + minY]
+export const filterOutNonStates = (
+  data: Array<BaseGeography>
+): Array<BaseGeography> => data.filter((g) => g.id !== "RUS" && g.id !== "ATA");
+
+export const getBigCountries = (
+  geographies: Array<SvgGeography>
+): Array<TrembitaSvgGeography> => {
+  const bigCountries: Array<TrembitaSvgGeography> = [];
+
+  geographies.forEach((geography) => {
+    const { geometry } = geography;
+
+    const mainlandPolygonCoordinates: Array<[xNumber, yNumber]> =
+      geometry.type === "Polygon"
+        ? geometry.coordinates[0]
+        : (getMainlandPolygon("", geometry.coordinates as any) as any);
+
+    const polygonArea = _calcPolygonArea(mainlandPolygonCoordinates);
+
+    if (polygonArea > BIG_COUNTRY_THRESHOLD) {
+      bigCountries.push({
+        ...geography,
+        polygonArea,
+        polygonCoordinates: _getMinMax(mainlandPolygonCoordinates),
+      });
+    }
+  });
+
+  return bigCountries;
+};
+
+type xNumber = number;
+type yNumber = number;
+
+export const getPolygonCenter = (
+  coordinates: Array<[xNumber, yNumber]>
+): [xNumber, yNumber] => {
+  let minX = coordinates[0][0],
+    maxX = coordinates[0][0],
+    minY = coordinates[0][1],
+    maxY = coordinates[0][1];
+
+  coordinates.forEach(([x, y]) => {
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
+  });
+
+  return [(maxX - minX) / 2 + minX, (maxY - minY) / 2 + minY];
 };
 
 /**
  * multiple polygon only finds the one with the biggest number of vectors. it does not mean that it's mainland territory
  * @returns Polygon
  */
-export const getMainlandPolygon = (name: string, arr: Array<Array<Array<[xNumber, yNumber]>>>): Array<Array<[xNumber, yNumber]>> => {
+export const getMainlandPolygon = (
+  name: string,
+  arr: Array<Array<Array<[xNumber, yNumber]>>>
+): Array<Array<[xNumber, yNumber]>> => {
   let longest = arr[0][0].length,
     longestTerritory = arr[0][0]; // mainland
 
-    arr.forEach((territory) => {
-      // if(name === 'United States of America') {
-      //   console.log('\n\n\n+===>>>BIGGEST', territory, longest, longestTerritory);
-      // }
+  arr.forEach((territory) => {
+    // if(name === 'United States of America') {
+    //   console.log('\n\n\n+===>>>BIGGEST', territory, longest, longestTerritory);
+    // }
 
-      if(territory[0].length > longest) {
-        longest = territory[0].length;
-        longestTerritory = territory[0] as any;
-      }
-    });
+    if (territory[0].length > longest) {
+      longest = territory[0].length;
+      longestTerritory = territory[0] as any;
+    }
+  });
 
-    // console.log(name, longestTerritory, arr);  
-  
-  return longestTerritory as any; // 
-}
+  // console.log(name, longestTerritory, arr);
+
+  return longestTerritory as any; //
+};

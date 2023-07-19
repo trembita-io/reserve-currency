@@ -1,15 +1,37 @@
 import { AFGHANISTAN, ANGOLA } from "./__mock__/big-countries";
-import { USA } from "./__mock__/multi-polygon-countries";
+import { USA as _USA } from "./__mock__/multi-polygon-countries";
 import { ALBANIA } from "./__mock__/small-countries";
-import { SvgGeography } from "./model";
-import { getBigCountries } from "./pure";
+import { TrembitaSvgGeography, SvgGeography } from "./model";
+import {
+  _calcPolygonArea,
+  _getMinMax,
+  getBigCountries,
+  getMainlandPolygon,
+} from "./pure";
+
+const MULTI_POLYGON_USA = preparePolygonArea(_USA);
+
+function preparePolygonArea(
+  geography: any & SvgGeography
+): TrembitaSvgGeography {
+  const coordinates =
+    geography.geometry.type === "Polygon"
+      ? geography.geometry.coordinates[0]
+      : (getMainlandPolygon("", geography.geometry.coordinates as any) as any);
+
+  return {
+    ...geography,
+    polygonArea: _calcPolygonArea(coordinates),
+    polygonCoordinates: _getMinMax(coordinates),
+  };
+}
 
 function prepareBigCountries() {
-    return [AFGHANISTAN, ANGOLA];
+  return [preparePolygonArea(AFGHANISTAN), preparePolygonArea(ANGOLA)];
 }
 
 function prepareSmallCountries() {
-    return [ALBANIA];
+  return [ALBANIA];
 }
 
 describe("[map.]pure.ts", () => {
@@ -29,11 +51,11 @@ describe("[map.]pure.ts", () => {
       expect(result).toEqual([]);
     });
 
-    it('should return 0 big countries', () => {
-        const result = getBigCountries(smallCountries);
+    it("should return 0 big countries", () => {
+      const result = getBigCountries(smallCountries);
 
-        expect(result.length).toBe(0);
-        expect(result).toEqual([]);
+      expect(result.length).toBe(0);
+      expect(result).toEqual([]);
     });
 
     it(`should return ${prepareBigCountries().length} big countries`, () => {
@@ -46,21 +68,25 @@ describe("[map.]pure.ts", () => {
       expect(result).toEqual(bigCountries);
     });
 
-    it(`should return ${prepareBigCountries().concat(USA).length} big countries (with one big mainland (MultiPolygon) country (USA))`, () => {
+    it(`should return ${
+      prepareBigCountries().concat(MULTI_POLYGON_USA).length
+    } big countries (with one big mainland (MultiPolygon) country (USA))`, () => {
       const result = getBigCountries([
-        ...bigCountries.concat(USA),
+        ...bigCountries.concat(MULTI_POLYGON_USA),
         ...smallCountries,
       ] as any);
 
-      expect(result.length).toBe(bigCountries.concat(USA).length);
-      expect(result).toEqual(bigCountries.concat(USA));
+      expect(result.length).toBe(
+        bigCountries.concat(MULTI_POLYGON_USA).length
+      );
+      expect(result).toEqual(bigCountries.concat(MULTI_POLYGON_USA));
     });
 
     it(`should return ${prepareBigCountries().length} big countries`, () => {
-        const result = getBigCountries(bigCountries);
-  
-        expect(result.length).toBe(bigCountries.length);
-        expect(result).toEqual(bigCountries);
-      });
+      const result = getBigCountries(bigCountries);
+
+      expect(result.length).toBe(bigCountries.length);
+      expect(result).toEqual(bigCountries);
+    });
   });
 });
