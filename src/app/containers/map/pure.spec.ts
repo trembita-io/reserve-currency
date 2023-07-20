@@ -1,7 +1,7 @@
 import { AFGHANISTAN, ANGOLA } from "./__mock__/big-countries";
 import { USA as _USA } from "./__mock__/multi-polygon-countries";
 import { ALBANIA } from "./__mock__/small-countries";
-import { TrembitaSvgGeography, SvgGeography } from "./model";
+import { TrembitaPolygonSvgGeography, SvgGeography } from "./model";
 import {
   _calcPolygonArea,
   _getMinMax,
@@ -13,7 +13,7 @@ const MULTI_POLYGON_USA = preparePolygonArea(_USA);
 
 function preparePolygonArea(
   geography: any & SvgGeography
-): TrembitaSvgGeography {
+): TrembitaPolygonSvgGeography {
   const coordinates =
     geography.geometry.type === "Polygon"
       ? geography.geometry.coordinates[0]

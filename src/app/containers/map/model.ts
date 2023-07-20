@@ -16,7 +16,7 @@ export interface SvgGeography extends BaseGeography {
   rsmKey: string;
 }
 
-export interface TrembitaSvgGeography extends SvgGeography {
+export interface TrembitaPolygonSvgGeography extends SvgGeography {
   polygonArea: number;
   polygonCoordinates: {
     minX: number;
@@ -25,5 +25,3 @@ export interface TrembitaSvgGeography extends SvgGeography {
     maxY: number;
   }
 }
-
-export const BIG_COUNTRY_THRESHOLD = 40;
